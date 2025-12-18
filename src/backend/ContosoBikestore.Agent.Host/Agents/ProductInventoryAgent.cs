@@ -1,6 +1,7 @@
-using ContosoBikestore.Agent.Host.Services;
+using ContosoBikestore.Agent.Host.Tools;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
+using ModelContextProtocol.Client;
 
 namespace ContosoBikestore.Agent.Host.Agents;
 
@@ -13,10 +14,6 @@ public static class ProductInventoryAgent
         IChatClient chatClient,
         AppConfig appConfig)
     {
-        // TEMPORARY: Using local hardcoded tools due to MCP server issues
-        // TODO: Revert to MCP server once issue is resolved
-
-        /* MCP SERVER CODE - COMMENTED OUT DUE TO 400 ERROR
         var mcpServerUrl = appConfig.ContosoStoreMcpUrl;
         var mcpServerLabel = appConfig.ContosoStoreMcpServerLabel;
         var mcpServerApiKey = appConfig.ContosoStoreMcpServerApiKey;
@@ -33,14 +30,13 @@ public static class ProductInventoryAgent
 
         var mcpClient = await McpClient.CreateAsync(mcpTransport);
         var mcpTools = await mcpClient.ListToolsAsync();
-        */
 
         // Using local hardcoded tools as temporary workaround
         var getAvailableBikesTool = AIFunctionFactory.Create(
-            LocalBikeTools.GetAvailableBikes);
+            ProductInventoryTools.GetAvailableBikes);
 
         var getBikeDetailsTool = AIFunctionFactory.Create(
-            LocalBikeTools.GetBikeDetails);
+            ProductInventoryTools.GetBikeDetails);
 
         return new ChatClientAgent(
             chatClient,
@@ -73,7 +69,6 @@ public static class ProductInventoryAgent
             """,
             name: "ProductInventoryAgent",
             description: "Specialist for product catalog and inventory queries",
-            tools: [getAvailableBikesTool, getBikeDetailsTool]);
-        // tools: [.. mcpTools.Cast<AITool>()]); // Original MCP tools
+            tools: [.. mcpTools.Cast<AITool>()]); // Original MCP tools
     }
 }

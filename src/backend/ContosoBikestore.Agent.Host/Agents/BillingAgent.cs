@@ -1,6 +1,6 @@
-using ContosoBikestore.Agent.Host.Services;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
+using ModelContextProtocol.Client;
 
 namespace ContosoBikestore.Agent.Host.Agents;
 
@@ -12,10 +12,6 @@ public static class BillingAgent
     public static async Task<AIAgent> CreateAsync(IChatClient chatClient, AppConfig appConfig,
         Microsoft.AspNetCore.Http.Json.JsonOptions jsonOptions)
     {
-        // TEMPORARY: Using local hardcoded tools due to MCP server issues
-        // TODO: Revert to MCP server once issue is resolved
-
-        /* MCP SERVER CODE - COMMENTED OUT DUE TO 400 ERROR
         // Get MCP tools for bike lookup
         var mcpServerUrl = appConfig.ContosoStoreMcpUrl;
         var mcpServerLabel = appConfig.ContosoStoreMcpServerLabel;
@@ -32,14 +28,6 @@ public static class BillingAgent
 
         var mcpClient = await McpClient.CreateAsync(mcpTransport);
         var mcpTools = await mcpClient.ListToolsAsync();
-        */
-
-        // Using local hardcoded tools as temporary workaround
-        var getAvailableBikesTool = AIFunctionFactory.Create(
-            LocalBikeTools.GetAvailableBikes);
-
-        var getBikeDetailsTool = AIFunctionFactory.Create(
-            LocalBikeTools.GetBikeDetails);
 
         var calculatePriceTool = AIFunctionFactory.Create((decimal price, int quantity) =>
         {
@@ -128,8 +116,7 @@ public static class BillingAgent
             """,
             name: "BillingAgent",
             description: "Specialist for pricing, payment processing, and order submission with approval requirements",
-            tools: [getAvailableBikesTool, getBikeDetailsTool, calculatePriceTool, processPaymentTool]);
-        // tools: [.. mcpTools.Cast<AITool>(), calculatePriceTool, processPaymentTool]); // Original with MCP tools
+          tools: [.. mcpTools.Cast<AITool>(), calculatePriceTool, processPaymentTool]);
 
         return new ServerFunctionApprovalAgent(baseAgent, jsonOptions.SerializerOptions);
     }

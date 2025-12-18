@@ -1,9 +1,9 @@
 using System.ComponentModel;
 using System.Text.Json;
 
-namespace ContosoBikestore.Agent.Host.Services;
+namespace ContosoBikestore.Agent.Host.Tools;
 
-public static class LocalBikeTools
+public static class ProductInventoryTools
 {
     private static readonly string HardcodedBikes = """
     [
