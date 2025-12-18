@@ -1,4 +1,0 @@
-/* ...existing code from frontend/src/components/core/MenuButton/MenuButton.module.css... */
-.secondary:not(:disabled, :active, :hover) {
-  background-color: var(--colorNeutralBackground2);
-}

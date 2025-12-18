@@ -10,7 +10,7 @@ param environmentName string
 @description('Primary location for all resources')
 param location string = 'australiaeast'
 
-param resourcePrefix string = 'aiagentmcp'
+param resourcePrefix string = 'contosoagent'
 
 // Azure AI Service parameters
 param chatCompletionModel string = 'gpt-4o'
@@ -38,12 +38,12 @@ var uniqueSuffixValue = substring(uniqueString(subscription().subscriptionId, rg
 var resourceNames = {
   aiService: toLower('${abbr.aiServicesAccounts}${uniqueSuffixValue}')
   keyVault: toLower('${abbr.keyVault}${uniqueSuffixValue}')
-  storageAccount: toLower('${abbr.storageStorageAccounts}${replace(uniqueSuffixValue, '-', '')}')
-  aiFoundryAccount: toLower('${abbr.aiFoundryAccounts}${uniqueSuffixValue}')
-  aiFoundryProject: toLower('${abbr.aiFoundryAccounts}proj-${uniqueSuffixValue}')
-  aiSearch: toLower('${abbr.aiSearchSearchServices}${replace(uniqueSuffixValue, '-', '')}')
-  logAnalytics: toLower('log-${uniqueSuffixValue}')
-  appInsights: toLower('appi-${uniqueSuffixValue}')
+  storageAccount: toLower('${resourcePrefix}${abbr.storageStorageAccounts}${replace(uniqueSuffixValue, '-', '')}')
+  aiFoundryAccount: toLower('${resourcePrefix}${abbr.aiFoundryAccounts}${uniqueSuffixValue}')
+  aiFoundryProject: toLower('${resourcePrefix}${abbr.aiFoundryAccounts}proj-${uniqueSuffixValue}')
+  aiSearch: toLower('${resourcePrefix}${abbr.aiSearchSearchServices}${replace(uniqueSuffixValue, '-', '')}')
+  logAnalytics: toLower('${resourcePrefix}-log-${uniqueSuffixValue}')
+  appInsights: toLower('${resourcePrefix}-appi-${uniqueSuffixValue}')
 }
 
 // Tags
@@ -136,6 +136,7 @@ module app 'modules/app.bicep' = {
     foundryProjectEndpoint: aiProject.outputs.endpoint
     foundryProjectName: aiProject.outputs.name
     openAIDeploymentName: chatCompletionModel
+    openAIEndpoint: aiFoundryAccount.outputs.openAiEndpoint
     appInsightsConnectionString: shared.outputs.appInsightsConnectionString
   }
 }
@@ -155,4 +156,5 @@ output CONTOSO_STORE_APP_URL string = app.outputs.CONTOSO_STORE_APP_URL
 output CONTOSO_STORE_MCP_URL string = app.outputs.CONTOSO_STORE_MCP_URL
 
 output AZURE_OPENAI_DEPLOYMENT_NAME string = chatCompletionModel
+output AZURE_OPENAI_ENDPOINT string = aiFoundryAccount.outputs.openAiEndpoint
 output TEXT_MODEL_NAME string = chatCompletionModel //TODO: to be removed when the notebook is updated

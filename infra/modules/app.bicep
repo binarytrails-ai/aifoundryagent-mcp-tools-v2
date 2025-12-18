@@ -6,6 +6,7 @@ param tags object
 param foundryProjectEndpoint string
 param foundryProjectName string
 param openAIDeploymentName string
+param openAIEndpoint string
 param appInsightsConnectionString string = ''
 
 var frontendAppName = '${resourcePrefix}-web-${uniqueSuffixValue}'
@@ -19,6 +20,21 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   sku: {
     name: 'B1'
     tier: 'Basic'
+  }
+  tags: tags
+}
+
+// Linux App Service Plan for Node.js frontend
+resource linuxAppServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
+  name: '${resourcePrefix}-plan-linux-${uniqueSuffixValue}'
+  location: location
+  kind: 'linux'
+  sku: {
+    name: 'B1'
+    tier: 'Basic'
+  }
+  properties: {
+    reserved: true
   }
   tags: tags
 }
@@ -55,6 +71,10 @@ resource backendApp 'Microsoft.Web/sites@2022-03-01' = {
           value: openAIDeploymentName
         }
         {
+          name: 'AZURE_OPENAI_ENDPOINT'
+          value: openAIEndpoint
+        }
+        {
           name: 'Azure__TenantId'
           value: subscription().tenantId
         }
@@ -67,6 +87,10 @@ resource backendApp 'Microsoft.Web/sites@2022-03-01' = {
           value: 'https://${mcpServerApp.name}.azurewebsites.net/sse'
         }
         {
+          name: 'CONTOSO_STORE_MCP_SERVER_API_KEY'
+          value: 'b7f3e2c1-4a5d-4e8b-9c2a-7f6d1e3a2b4c'
+        }
+        {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: appInsightsConnectionString
         }
@@ -75,10 +99,11 @@ resource backendApp 'Microsoft.Web/sites@2022-03-01' = {
   }
 }
 
-// Frontend App Service
+// Frontend App Service (Linux)
 resource frontendApp 'Microsoft.Web/sites@2022-03-01' = {
   name: frontendAppName
   location: location
+  kind: 'app,linux'
   tags: union(tags, {
     'azd-service-name': 'web'
   })
@@ -86,17 +111,35 @@ resource frontendApp 'Microsoft.Web/sites@2022-03-01' = {
     type: 'SystemAssigned'
   }
   properties: {
-    serverFarmId: appServicePlan.id
+    serverFarmId: linuxAppServicePlan.id
     httpsOnly: true
     siteConfig: {
+      linuxFxVersion: 'NODE|20-lts'
+      appCommandLine: 'node server.js'
       appSettings: [
         {
-          name: 'VITE_API_BASE_URL'
+          name: 'BACKEND_AGENT_BASE_URL'
           value: 'https://${backendAppName}.azurewebsites.net'
         }
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: appInsightsConnectionString
+        }
+        {
+          name: 'NODE_ENV'
+          value: 'production'
+        }
+        {
+          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
+          value: 'false'
+        }
+        {
+          name: 'WEBSITE_NODE_DEFAULT_VERSION'
+          value: '20-lts'
+        }
+        {
+          name: 'NEXT_TELEMETRY_DISABLED'
+          value: '1'
         }
       ]
     }
@@ -147,6 +190,10 @@ resource mcpServerApp 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: appInsightsConnectionString
+        }
+        {
+          name: 'API_KEY'
+          value: 'b7f3e2c1-4a5d-4e8b-9c2a-7f6d1e3a2b4c'
         }
       ]
     }

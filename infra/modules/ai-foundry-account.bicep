@@ -28,3 +28,4 @@ resource aiFoundry 'Microsoft.CognitiveServices/accounts@2025-04-01-preview' = {
 
 output resourceId string = aiFoundry.id
 output name string = aiFoundry.name
+output openAiEndpoint string = 'https://${aiFoundry.name}.cognitiveservices.azure.com'
