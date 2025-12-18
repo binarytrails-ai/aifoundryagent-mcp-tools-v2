@@ -9,11 +9,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Compile Remove="Controllers\AgentController.cs" />
-		<Compile Remove="Controllers\AgentMessagesController.cs" />
-		<Compile Remove="Controllers\AgentToolsController.cs" />
-		<Compile Remove="Controllers\InputTaskController.cs" />
-		<Compile Remove="Controllers\MessagesController.cs" />
+	  <Compile Remove="Controllers\**" />
+	  <Content Remove="Controllers\**" />
+	  <EmbeddedResource Remove="Controllers\**" />
+	  <None Remove="Controllers\**" />
 	</ItemGroup>
 
 	<ItemGroup>
